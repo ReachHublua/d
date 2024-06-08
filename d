@@ -2134,9 +2134,9 @@ local Mon = {}
 for i, v in pairs(game.Workspace.Living:GetChildren()) do
     table.insert(Mon, v.Name)
 end
-s
+
 Page1.CreateDropdown({
-    Name = "Select Mobs",
+    Name = "Select Mob",
     Value = "1",
     List = Mon,
     Callback = function(selectedMob)
@@ -2145,43 +2145,65 @@ Page1.CreateDropdown({
 })
 
 Page1.CreateToggle({
-    Name = "Auto Farm Mobs",
+    Name = "Auto Farm Mob",
     Dis = "",
     Value = false,
     Callback = function(v)
         _G.AutoFarm = v
         while _G.AutoFarm do
             wait()
+            
             if Select and game.Workspace.Living[Select] then
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Workspace.Living[Select].HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
+                local mob = game.Workspace.Living[Select]
+                if mob.Humanoid.Health > 0 then
+                    game:GetService('VirtualUser'):CaptureController() 
+                    game:GetService('VirtualUser'):Button1Down(Vector2.new(1280, 672))
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
+                else
+                    print("Selected mob is dead")
+                    _G.AutoFarm = false
+                end
             else
-                print("No mob selected or mob not found.")
-                _G.AutoFarm = false 
+                print("No mob selected")
+                _G.AutoFarm = false
             end
         end
     end,
 })
 
-
 Page1.CreateToggle({
-	Name = "Auto Farm Dummy",
-	Dis = "",
-	Value = true,
-	Callback = function(v)
-		_G.Autofarmdummy = v
-	end,
+    Name = "Auto Farm Dummy",
+    Dis = "",
+    Value = false,
+    Callback = function(v)
+        _G.AutoFarmDummy = v
+        if v then
+            spawn(function()
+                while _G.AutoFarmDummy do
+                    wait()
+                    pcall(function()
+                        for i, v in pairs(game.Workspace.Living:GetChildren()) do
+                            if v.Name == "Dummy" and v.Humanoid.Health > 0 then
+                                repeat
+                                    task.wait()
+                                    game:GetService('VirtualUser'):CaptureController() 
+                                    game:GetService('VirtualUser'):Button1Down(Vector2.new(1280, 672))
+                                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 0, 5)
+                                until not _G.AutoFarmDummy or v.Humanoid.Health <= 0
+                            end
+                        end
+                    end)
+                end
+            end)
+        end
+    end,
 })
 
-while _G.Autofarmdummy do
-    wait()
-    pcall(function()
-        for i,v in pairs(game.Workspace.Living:GetChildren()) do
-            if v.Name == "Dummy" then
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0,0,5)
-                game:GetService('VirtualUser'):CaptureController() 
-                game:GetService('VirtualUser'):Button1Down(Vector2.new(1280, 672))
-            end
-        end
-    end)
-end
+local Tap2 = Windown.CreateTap({
+	Title = "Item",
+	Icon = rbxassetid://10734909540
+})
 
+local Page3 = Tap2.CreatePage({
+	Side = "Left",
+})
